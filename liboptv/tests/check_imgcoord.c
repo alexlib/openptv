@@ -20,7 +20,8 @@ int file_exists(char *filename);
 START_TEST(test_img_xy_mm_geo)
 {
 
-    double X = 50.0, Y = 100.0, Z = -10.0, x,y ;
+    vec3d pos = {50.0, 100.0, -10.0};
+    double x,y ;
     int i_cam = 0;
             
     Calibration *cal;
@@ -50,18 +51,15 @@ START_TEST(test_img_xy_mm_geo)
     cpar = read_control_par(filename);
     fail_if (cpar == NULL, "\n control parameter file reading failed\n ");
     
-    cpar->mm->lut = 0; // to start LUT initialization 
     cpar->num_cams = 1; // only one camera test
-
-    mmlut test_mmlut[4];
     
-    init_mmLUT (vpar, cpar, cal, test_mmlut);
+    init_mmlut (vpar, cpar, cal);
     
-    img_xy_mm_geo (X,Y,Z, cal, cpar->mm, i_cam, test_mmlut, &x, &y);
+    img_xy_mm_geo (pos, cal, cpar->mm, &x, &y);
     
-    ck_assert_msg(  fabs(x + 1.11895292) < EPS && 
-                    fabs(y - 33.91358203)  < EPS,
-     "Expected -1.11895292 33.91358203  but found %10.8f %10.8f\n", 
+    ck_assert_msg(  fabs(x + 0.29374895) < EPS && 
+                    fabs(y - 33.79886299)  < EPS,
+     "Expected -0.29374895 33.79886299  but found %10.8f %10.8f\n", 
      x,y);      
     
 }
@@ -71,7 +69,8 @@ END_TEST
 
 START_TEST(test_imgcoord)
 {
-    double X = 100.0, Y = 100.0, Z = 0.0, x,y ;
+    vec3d pos = {50.0, 100.0, -10.0};
+    double x,y ;
     int i_cam = 0;
             
     Calibration *cal;
@@ -101,27 +100,21 @@ START_TEST(test_imgcoord)
     cpar = read_control_par(filename);
     fail_if (cpar == NULL, "\n control parameter file reading failed\n ");
     
-    cpar->mm->lut = 0; // to start LUT initialization 
+    
     cpar->num_cams = 1; // only one camera test
-
-    mmlut test_mmlut[4];
     
-    init_mmLUT (vpar, cpar, cal, test_mmlut);
+    init_mmlut (vpar, cpar, cal);
     
-    img_coord (X,Y,Z, cal, cpar->mm, i_cam, test_mmlut, &x, &y);
+    img_coord (pos, cal, cpar->mm, &x, &y);
     
-    ck_assert_msg(  fabs(x - 22.18131570) < EPS && 
-                    fabs(y - 26.05917813)  < EPS,
-     "Expected 22.18131570 26.05917813  but found %10.8f %10.8f\n", 
+    ck_assert_msg(  fabs(x - 10.65513015) < EPS && 
+                    fabs(y - 26.18672754)  < EPS,
+     "Expected 10.65513015 26.18672754  but found %10.8f %10.8f\n", 
      x,y);
     
 }
 END_TEST
             
-
-
-
-
 
 
 Suite* fb_suite(void) {

@@ -23,39 +23,42 @@ Routines contained:
 /*  img_coord() calculates projection from coordinates in
     world space to pixel coordinates in image space
     Arguments:
-    doubles X,Y,Z in real space
-    Calibration *cal parameters pointer
+    vec3d pos is a vector of position in 3D (X,Y,Z real space)
+    Calibration *cal parameters pointer of a specific camera
     multimedia *mm parameters pointer
     int i_cam - camera number (from 0 to cpar->num_cams)
     multimedia look-up table array mmLUT pointer
     Output:
     double x,y in pixel coordinates in the image space
  */
-void img_coord (double X, double Y, double Z, Calibration *cal, mm_np *mm, 
-    int i_cam, mmlut *mmLUT, double *x, double *y){
+void img_coord (vec3d pos, Calibration *cal, mm_np *mm, double *x, double *y){
     
     double deno, r, dx, dy;
     Exterior Ex_t;
-    double X_t,Y_t,Z_t,cross_p[3],cross_c[3];
+    double X,Y,Z, X_t,Y_t,Z_t,cross_p[3],cross_c[3];
+    vec3d pos_t;
 	
     /* calculate tilted positions and copy them to X_t, Y_t and Z_t */
 
-	trans_Cam_Point(cal[i_cam].ext_par, *mm, cal[i_cam].glass_par, X, Y, Z, \
-          &Ex_t, &X_t, &Y_t, &Z_t, (double *)cross_p, (double *)cross_c);
+	trans_Cam_Point(cal->ext_par, *mm, cal->glass_par, pos, \
+          &Ex_t, pos_t, cross_p, cross_c);
     
-    multimed_nlay (&Ex_t, mm, X_t,Y_t,Z_t, &X_t,&Y_t, i_cam, mmLUT);
-
-    back_trans_Point(X_t,Y_t,Z_t,*mm, cal->glass_par,cross_p,cross_c,&X,&Y,&Z);
+    multimed_nlay (cal, mm, pos_t, &X_t,&Y_t);
+    
+    vec_set(pos_t,X_t,Y_t,pos_t[2]);
+    
+    back_trans_Point(pos_t, *mm, cal->glass_par, cross_p, cross_c, pos);
 	
-    X -= cal->ext_par.x0;  Y -= cal->ext_par.y0;  Z -= cal->ext_par.z0;
+    pos[0] -= cal->ext_par.x0;  pos[1] -= cal->ext_par.y0;  pos[2] -= cal->ext_par.z0;
 
-    deno = cal->ext_par.dm[0][2] * X + cal->ext_par.dm[1][2] * Y + 
-        cal->ext_par.dm[2][2] * Z;
+    deno = cal->ext_par.dm[0][2] * pos[0] + cal->ext_par.dm[1][2] * pos[1] + 
+        cal->ext_par.dm[2][2] * pos[2];
         
-    *x = cal->int_par.xh - cal->int_par.cc * (cal->ext_par.dm[0][0]*X + 
-        cal->ext_par.dm[1][0]*Y + cal->ext_par.dm[2][0]*Z) / deno;
-    *y = cal->int_par.yh - cal->int_par.cc * (cal->ext_par.dm[0][1]*X + 
-        cal->ext_par.dm[1][1]*Y + cal->ext_par.dm[2][1]*Z) / deno;
+    *x = cal->int_par.xh - cal->int_par.cc * (cal->ext_par.dm[0][0]*pos[0] + 
+        cal->ext_par.dm[1][0]*pos[1] + cal->ext_par.dm[2][0]*pos[2]) / deno;
+        
+    *y = cal->int_par.yh - cal->int_par.cc * (cal->ext_par.dm[0][1]*pos[0] + 
+        cal->ext_par.dm[1][1]*pos[1] + cal->ext_par.dm[2][1]*pos[2]) / deno;
 
     r = sqrt (*x * *x + *y * *y);
 	
@@ -89,33 +92,35 @@ void img_coord (double X, double Y, double Z, Calibration *cal, mm_np *mm,
     double x,y in pixel coordinates in the image space
  */
  
-void img_xy_mm_geo (double X, double Y, double Z, Calibration *cal, mm_np *mm, int i_cam, 
-    mmlut *mmLUT, double *x, double *y)
-{
+void img_xy_mm_geo (vec3d pos, Calibration *cal, mm_np *mm, double *x, double *y){
 
   double deno;
   Exterior Ex_t;
-  double X_t,Y_t,Z_t,cross_p[3],cross_c[3],Xh,Yh,Zh;
+  double X_t,Y_t,Z_t,cross_p[3],cross_c[3];
+  vec3d pos_t;
 
   /* calculate tilted positions and copy them to X_t, Y_t and Z_t */
-
-  trans_Cam_Point(cal[i_cam].ext_par, *mm, cal[i_cam].glass_par, X, Y, Z, \
-          &Ex_t, &X_t, &Y_t, &Z_t, (double *)cross_p, (double *)cross_c);
   
-  multimed_nlay (&Ex_t, mm, X_t,Y_t,Z_t, &X_t,&Y_t, i_cam, mmLUT);
+	trans_Cam_Point(cal->ext_par, *mm, cal->glass_par, pos, \
+          &Ex_t, pos_t, cross_p, cross_c);
+    
+    multimed_nlay (cal, mm, pos_t, &X_t,&Y_t);
+    
+    vec_set(pos_t,X_t,Y_t,pos_t[2]);
+    
+    back_trans_Point(pos_t, *mm, cal->glass_par, cross_p, cross_c, pos);
+	  
 
-  back_trans_Point(X_t,Y_t,Z_t,*mm, cal->glass_par,cross_p,cross_c,&X,&Y,&Z);
+    deno = cal->ext_par.dm[0][2] * (pos[0]-cal->ext_par.x0)
+    + cal->ext_par.dm[1][2] * (pos[1]-cal->ext_par.y0)
+    + cal->ext_par.dm[2][2] * (pos[2]-cal->ext_par.z0);
 
-  deno = cal->ext_par.dm[0][2] * (X-cal->ext_par.x0)
-    + cal->ext_par.dm[1][2] * (Y-cal->ext_par.y0)
-    + cal->ext_par.dm[2][2] * (Z-cal->ext_par.z0);
+    *x = - cal->int_par.cc *  (cal->ext_par.dm[0][0] * (pos[0]-cal->ext_par.x0)
+          + cal->ext_par.dm[1][0] * (pos[1]-cal->ext_par.y0)
+          + cal->ext_par.dm[2][0] * (pos[2]-cal->ext_par.z0)) / deno;
 
-  *x = - cal->int_par.cc *  (cal->ext_par.dm[0][0] * (X-cal->ext_par.x0)
-		  + cal->ext_par.dm[1][0] * (Y-cal->ext_par.y0)
-		  + cal->ext_par.dm[2][0] * (Z-cal->ext_par.z0)) / deno;
-
-  *y = - cal->int_par.cc *  (cal->ext_par.dm[0][1] * (X-cal->ext_par.x0)
-		  + cal->ext_par.dm[1][1] * (Y-cal->ext_par.y0)
-		  + cal->ext_par.dm[2][1] * (Z-cal->ext_par.z0)) / deno;
+    *y = - cal->int_par.cc *  (cal->ext_par.dm[0][1] * (pos[0]-cal->ext_par.x0)
+          + cal->ext_par.dm[1][1] * (pos[1]-cal->ext_par.y0)
+          + cal->ext_par.dm[2][1] * (pos[2]-cal->ext_par.z0)) / deno;
 }
 
