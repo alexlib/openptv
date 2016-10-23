@@ -598,9 +598,8 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
     cpar = run_info->cpar;
     curr_targets = fb->buf[1]->targets;
     
-
     p16 = (foundpix*) calloc(fb->num_cams*MAX_CANDS, sizeof(foundpix));
-
+    
     /* try to track correspondences from previous 0 - corp, variable h */
     for (h = 0; h < fb->buf[1]->num_parts; h++) {
         for (j = 0; j < 6; j++) vec_init(X[j]);
@@ -614,9 +613,6 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
 	    /* 3D-position */
 	    vec_copy(X[1], curr_path_inf->x);
         
-//        printf("Trying to link particle %d, located at: %3.2f %3.2f %3.2f\n",h,X[1][0],X[1][1],X[1][2]);
-//        printf("previous %d, next %d\n",curr_path_inf->prev,curr_path_inf->next);
-
 	    /* use information from previous to locate new search position
 	       and to calculate values for search area */
 	    if (curr_path_inf->prev >= 0) {
@@ -660,17 +656,14 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
 
 	    /* fill and sort candidate struct */
 	    sortwhatfound(p16, &counter1, fb->num_cams);
-        for (j=0;j<counter1;j++){
-//            printf("p16[%d].ftnr = %d, freq = %d\n",j,p16[j].ftnr,p16[j].freq);
-        }
-	    w = (foundpix *) calloc (counter1, sizeof (foundpix));
 
-	    if (counter1 > 0) count2++;
-        copy_foundpix_array(w, p16, counter1, fb->num_cams);
-//        printf("copied p16 to w, going to the next frame\n");
-	    /*end of candidate struct */
-
-	    /* check for what was found */
+	    if (counter1 > 0) {
+                count2++;
+                w = (foundpix *) calloc (counter1, sizeof (foundpix));
+                copy_foundpix_array(w, p16, counter1, fb->num_cams);
+            }
+            
+                /* check for what was found */
 	    for (mm=0; mm<counter1;mm++) { /* counter1-loop */
 	        /* search for found corr of current the corr in next
 		    with predicted location */
@@ -705,14 +698,12 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
 
 	        /* fill and sort candidate struct */
 	        sortwhatfound(p16, &counter2, fb->num_cams);
-            for (j=0;j<counter2;j++){
-//                printf("next step p16[%d].ftnr = %d, freq = %d\n",j,p16[j].ftnr,p16[j].freq);
-            }
-            
-	        wn = (foundpix *) calloc (counter2, sizeof (foundpix));
-            
-	        if (counter2 > 0) count3++;
-            copy_foundpix_array(wn, p16, counter2, fb->num_cams);
+                        	        
+	        if (counter2 > 0) {
+                    count3++;
+                    wn = (foundpix *) calloc (counter2, sizeof (foundpix));
+                    copy_foundpix_array(wn, p16, counter2, fb->num_cams);
+                
 //            printf("copied p16 to wn going to last frame\n");
 
 	        /*end of candidate struct */
@@ -759,7 +750,8 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
                     }
 		        }
 	        }   /* end of counter2-loop */
-
+                free(wn);
+                }
 	        /* creating new particle position,
             *  reset img coord because of num_cams < 4 
             *  fix distance of 3 pixels to define xl,xr,yu,yd instead of searchquader
@@ -883,8 +875,8 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
 		        }
 	        }
 
-	        free(wn);
         } /* end of counter1-loop */
+        if (counter1 > 0) free(w);
 
 	    /* begin of inlist still zero */
 	    if (tpar->add) {
@@ -970,7 +962,6 @@ void trackcorr_c_loop (tracking_run *run_info, int step, int display, Calibratio
 	    /* end of inlist still zero */
 	    /***********************************/
 
-	    free(w);
 	} /* end of h-loop */
 
     /* sort decis and give preliminary "finaldecis"  */
@@ -1173,9 +1164,6 @@ double trackback_c (tracking_run *run_info, int step, int display, Calibration *
 
     /* sequence loop */
     for (step = seq_par->last - 1; step > seq_par->first; step--) {
-        printf ("Time step: %d, seqnr: %d:\n",
-            step - seq_par->first, step);
-
         for (h = 0; h < fb->buf[1]->num_parts; h++) {
             curr_path_inf = &(fb->buf[1]->path_info[h]);
 
@@ -1211,35 +1199,37 @@ double trackback_c (tracking_run *run_info, int step, int display, Calibration *
 
             /* fill and sort candidate struct */
             sortwhatfound(p16, &counter1, fb->num_cams);
-            w = (foundpix *) calloc (counter1, sizeof (foundpix));
-
+            
             /*end of candidate struct */
-            if (counter1 > 0) count2++;
-            copy_foundpix_array(w, p16, counter1, fb->num_cams);
+            if (counter1 > 0) {
+                count2++;
+                w = (foundpix *) calloc (counter1, sizeof (foundpix));
+                copy_foundpix_array(w, p16, counter1, fb->num_cams);
+            
+                for (i = 0; i < counter1; i++) {
+                    ref_path_inf = &(fb->buf[2]->path_info[w[i].ftnr]);
+                    vec_copy(X[3], ref_path_inf->x);
 
-            for (i = 0; i < counter1; i++) {
-                ref_path_inf = &(fb->buf[2]->path_info[w[i].ftnr]);
-                vec_copy(X[3], ref_path_inf->x);
+                    vec_subt(X[1], X[3], diff_pos);
+                    if (pos3d_in_bounds(diff_pos, tpar)) {
+                        angle_acc(X[1], X[2], X[3], &angle, &acc);
 
-                vec_subt(X[1], X[3], diff_pos);
-                if (pos3d_in_bounds(diff_pos, tpar)) {
-                    angle_acc(X[1], X[2], X[3], &angle, &acc);
-
-                    /* *********************check link *****************************/
-                    if ((acc < tpar->dacc && angle < tpar->dangle) || \
-                        (acc < tpar->dacc/10))
-                    {
-                        dl = (vec_diff_norm(X[1], X[3]) +
-                            vec_diff_norm(X[0], X[1]) )/2;
-                        quali=w[i].freq;
-                        rr = (dl/run_info->lmax + acc/tpar->dacc + angle/tpar->dangle)/quali;
-                        register_link_candidate(curr_path_inf, rr, w[i].ftnr);
+                        /* *********************check link *****************************/
+                        if ((acc < tpar->dacc && angle < tpar->dangle) || \
+                            (acc < tpar->dacc/10))
+                        {
+                            dl = (vec_diff_norm(X[1], X[3]) +
+                                vec_diff_norm(X[0], X[1]) )/2;
+                            quali=w[i].freq;
+                            rr = (dl/run_info->lmax + acc/tpar->dacc + angle/tpar->dangle)/quali;
+                            register_link_candidate(curr_path_inf, rr, w[i].ftnr);
+                        }
                     }
                 }
+
+                free(w);
             }
-
-            free(w);
-
+            
             quali=0;
 
             /* reset img coord because num_cams < 4 */

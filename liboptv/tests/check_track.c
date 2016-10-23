@@ -389,25 +389,22 @@ END_TEST
 START_TEST(test_trackcorr_c_loop)
 {
     tracking_run *ret;
-    int step, display=0;
+    int step, display = 0;
     Calibration *calib[3];
     control_par *cpar;
 
     chdir("testing_fodder/track");
-    
-    printf("----------------------------\n");
-    printf("Test tracking multiple files 2 cameras, 1 particle \n");
-    
+
     cpar = read_control_par("parameters/ptv.par");
     read_all_calibration(calib, cpar->num_cams);
-    ret = trackcorr_c_init(calib[0]);
-
-
-    trackcorr_c_loop (ret, ret->seq_par->first, display, calib);
+    ret = trackcorr_c_init(calib);
     
+    trackcorr_c_loop (ret, ret->seq_par->first, display, calib);
+
     for (step = ret->seq_par->first+1; step < ret->seq_par->last; step++)
     {
         trackcorr_c_loop (ret, step, display, calib);
+        printf("Ferret not here\n");
     }
     trackcorr_c_finish(ret, ret->seq_par->last, display);
     
@@ -433,17 +430,13 @@ START_TEST(test_cavity)
     Calibration *calib[4];
     control_par *cpar;
     
-    
-    printf("----------------------------\n");
-    printf("Test cavity case \n");
-    
     chdir("testing_fodder/test_cavity");
     
     
     cpar = read_control_par("parameters/ptv.par");
     read_all_calibration(calib, cpar->num_cams);
     printf("In test_cavity num cams = %d\n",cpar->num_cams);
-    ret = trackcorr_c_init(calib[0]);
+    ret = trackcorr_c_init(calib);
     
     trackcorr_c_loop (ret, 10002, display, calib);
     //trackcorr_c_finish(ret, 10002, display);
@@ -467,12 +460,9 @@ START_TEST(test_trackback)
     
     chdir("testing_fodder/track");
     
-    printf("----------------------------\n");
-    printf("trackback test \n");
-    
     cpar = read_control_par("parameters/ptv.par");
     read_all_calibration(calib, cpar->num_cams);
-    ret = trackcorr_c_init(calib[0]);
+    ret = trackcorr_c_init(calib);
     ret->tpar->dvxmin =ret->tpar->dvymin=ret->tpar->dvzmin=-50;
     ret->tpar->dvxmax =ret->tpar->dvymax=ret->tpar->dvzmax=50;
     
