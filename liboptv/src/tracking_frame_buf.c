@@ -232,12 +232,13 @@ int read_path_frame(corres *cor_buf, P *path_buf, \
     char fname[STR_MAX_LEN];
     int read_res = 0, targets = -1, alt_link = 0;
     double discard; /* For position values that are to be read again from a 
-                       differnt file. */
+                       different file. */
     
     /* File format: first line contains the number of points, then each line is
     a record of path and correspondence info. We don't need the nuber of points
     because we read to EOF anyway. */
     
+    printf("reading frame frame_num %d\n",frame_num);
     sprintf(fname, "%s.%d", corres_file_base, frame_num);
     filein = fopen (fname, "r");
     if (!filein) {
@@ -504,6 +505,8 @@ int read_frame(frame *self, char *corres_file_base, char *linkage_file_base,
     self->num_parts = read_path_frame(self->correspond, self->path_info,
         corres_file_base, linkage_file_base, prio_file_base, frame_num);
     if (self->num_parts == -1) return 0;
+
+    printf("read from frame %d and got %d particles\n",frame_num,self->num_parts);
     
     /* Prevent crashes by testing for initial allocation */
     if (self->num_targets == 0) return 0;
@@ -541,6 +544,9 @@ int write_frame(frame *self, char *corres_file_base, char *linkage_file_base,
 {
     int cam, status;
     
+    printf("writing frame %d\n",frame_num);
+    // printf('number of parts is %d\n',self->num_parts);
+
     status = write_path_frame(self->correspond, self->path_info,
         self->num_parts, corres_file_base, linkage_file_base, prio_file_base,
         frame_num);
@@ -563,6 +569,7 @@ void fb_free(framebuf_base *self) {
 }
 
 int fb_read_frame_at_end(framebuf_base *self, int frame_num, int read_links) {
+    printf("inside fb_read_frame_at_end that points to virtual one frame_num is %d\n",frame_num);
     return self->_vptr->read_frame_at_end(self, frame_num, read_links);
 }
 
@@ -583,6 +590,7 @@ void fb_base_init(framebuf_base *new_buf, int buf_len, int num_cams, int max_tar
         new_buf->buf--;
         
         alloc_frame = (frame *) malloc(sizeof(frame));
+        printf("frame_init runs in the while loop \n"); 
         frame_init(alloc_frame, num_cams, max_targets);
         
         /* The second half of _ring_vec points to the same objects as the
@@ -694,12 +702,16 @@ void fb_prev(framebuf_base *self) {
  */
 int fb_disk_read_frame_at_end(framebuf_base *self_base, int frame_num, int read_links) {
     framebuf* self = (framebuf*)self_base;
+
+    printf("inside fb_disk_read_frame_at_end\n");
     
     if (read_links) {
+        printf("going to read frame in read_links is true and frame is %d\n",frame_num);
         return read_frame(self->base.buf[self->base.buf_len - 1], self->corres_file_base,
             self->linkage_file_base, self->prio_file_base, 
             self->target_file_base, frame_num);
     } else {
+        printf("going to read frame in read_links is false and frame is %d\n",frame_num);
         return read_frame(self->base.buf[self->base.buf_len - 1], self->corres_file_base,
             NULL, NULL, self->target_file_base, frame_num);
     }

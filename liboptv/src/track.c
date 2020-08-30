@@ -46,15 +46,21 @@
 */
 void track_forward_start(tracking_run *tr) {
     int step;
+    printf("inside track_forward_start\n");
+
     /* Prime the buffer with first frames */
     for (step = tr->seq_par->first; 
          step < tr->seq_par->first + TR_BUFSPACE - 1; 
          step++) 
     {
+        printf("step %d\n",step);
+        printf("going to fb_read_frame_at_end not asking for links\n");
         fb_read_frame_at_end(tr->fb, step, 0);
+        print("advancing fb_next\n");
         fb_next(tr->fb);
     }
-    fb_prev(tr->fb);
+    fb_prev(tr->fb); 
+    printf("stepping one back with fb_prev\n");
 }
 
 /* reset_foundpix_array() sets default values for foundpix objects in an array.
@@ -698,6 +704,8 @@ void trackcorr_c_loop (tracking_run *run_info, int step) {
 
     /* try to track correspondences from previous 0 - corp, variable h */
     orig_parts = fb->buf[1]->num_parts;
+    printf("main trackcorr_c_loop with step = %d\n",step);
+    printf("orig_parts = %d\n",orig_parts);
     for (h = 0; h < orig_parts; h++) {
         for (j = 0; j < 6; j++) vec_init(X[j]);
 
@@ -1029,6 +1037,8 @@ double trackback_c (tracking_run *run_info)
         printf ("Time step: %d, seqnr: %d:\n",
                 step - seq_par->first, step);
 
+        printf("Number of targets in fb->buf[1]->num_parts %d\n",fb->buf[1]->num_parts);
+
         for (h = 0; h < fb->buf[1]->num_parts; h++) {
             curr_path_inf = &(fb->buf[1]->path_info[h]);
 
@@ -1173,7 +1183,7 @@ double trackback_c (tracking_run *run_info)
             if (curr_path_inf->prev != PREV_NONE ) count1++;
         }         /* end of creation of links with decision check */
 
-        printf ("step: %d, curr: %d, next: %d, links: %d, lost: %d, add: %d",
+        printf ("step no: %d, curr: %d, next: %d, links: %d, lost: %d, add: %d",
                 step, fb->buf[1]->num_parts, fb->buf[2]->num_parts, count1,
                 fb->buf[1]->num_parts - count1, num_added);
 

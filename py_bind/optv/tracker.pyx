@@ -80,8 +80,7 @@ cdef class Tracker:
         for step in range(
                 self.run_info.seq_par.first, self.run_info.seq_par.last):
             trackcorr_c_loop(self.run_info, step)
-        trackcorr_c_finish(self.run_info, self.run_info.seq_par.last)
-    
+            
     def full_backward(self):
         """
         Does a full backward run on existing tracking results. so make sure
