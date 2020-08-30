@@ -120,7 +120,7 @@ void register_closest_neighbs(target *targets, int num_targets, int cam,
                               du, dd, all_cands, cpar);
 
     for (cand = 0; cand < MAX_CANDS; cand++) {
-        if(all_cands[cand] == -999) {
+        if(all_cands[cand] == PT_UNUSED) {
             reg[cand].ftnr = TR_UNUSED;
         } else {
             reg[cand].whichcam[cam] = 1;
