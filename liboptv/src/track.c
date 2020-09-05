@@ -842,6 +842,7 @@ void trackcorr_c_loop (tracking_run *run_info, int step) {
                         if (tpar->add) {
                             add_particle(fb->buf[3], X[4], philf);
                             num_added++;
+                            printf("num_added line 845 %d\n",num_added);
                         }
                     }
                 }
@@ -909,6 +910,7 @@ void trackcorr_c_loop (tracking_run *run_info, int step) {
 
                             add_particle(fb->buf[2], X[3], philf);
                             num_added++;
+                            printf("num_added line 913 %d\n",num_added);
                         }
                     }
                     in_volume = 0;
@@ -1123,6 +1125,7 @@ double trackback_c (tracking_run *run_info)
                                 register_link_candidate(curr_path_inf, rr, fb->buf[2]->num_parts);
 
                                 add_particle(fb->buf[2], X[3], philf);
+                                printf("num added is not here line 1128");
                             }
                         }
                         in_volume = 0;
