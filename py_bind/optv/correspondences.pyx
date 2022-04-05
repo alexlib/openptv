@@ -4,7 +4,7 @@ Implementation of bindings for correspondences and related data structures.
 
 Created on Fri Oct 28 13:46:39 2016
 
-@author: Yosef Meller, Alex Liberzon, TAU
+@author: yosef
 """
 
 from libc.stdlib cimport malloc, calloc, free
@@ -17,7 +17,7 @@ from optv.calibration cimport Calibration
 from optv.orientation cimport COORD_UNUSED
 from optv.tracking_framebuf cimport TargetArray, Target, target, frame, \
     PT_UNUSED, CORRES_NONE
-    
+
 cdef class MatchedCoords:
     """
     Keeps a block of 2D flat coordinates, each with a "point number", the same
@@ -153,9 +153,7 @@ def correspondences(list img_pts, list flat_coords, list cals,
         sorted_pos, sorted_corresp, num_targs = single_cam_correspondence(img_pts, flat_coords, cals)
         return sorted_pos, sorted_corresp, num_targs
 
-    cdef:
-        int pt, cam
-        
+    cdef:        
         calibration **calib = <calibration **> malloc(
             num_cams * sizeof(calibration *))
         coord_2d **corrected = <coord_2d **> malloc(

@@ -1,5 +1,5 @@
 from optv.calibration cimport calibration
-from optv.parameters cimport control_par, mm_np, volume_par
+from optv.parameters cimport control_par, mm_np
 from optv.tracking_framebuf cimport target
 from optv.vec_utils cimport vec3d
 from optv.epipolar cimport epi_mm_2D
