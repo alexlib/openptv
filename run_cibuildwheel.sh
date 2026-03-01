@@ -7,7 +7,8 @@ rm -rf build dist *.egg-info optv/optv
 find . -name "*.so" -o -name "*.c" | grep -v ".venv" | xargs rm -f 2>/dev/null || true
 
 # Install dependencies (host Python must be 3.11+ for cibuildwheel 3.x)
-pip install numpy>=2.0.0 cython>=3.0.0
+python -m pip install --upgrade pip
+python -m pip install numpy>=2.0.0 cython>=3.0.0
 
 # Prepare the source files
 python setup.py prepare
