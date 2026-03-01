@@ -26,8 +26,8 @@ if ! command -v uv &> /dev/null; then
     curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-# Define Python versions to build for
-PYTHON_VERSIONS=("3.10" "3.11")
+# Define Python versions to build for (3.11+)
+PYTHON_VERSIONS=("3.11" "3.12" "3.13")
 
 for py_version in "${PYTHON_VERSIONS[@]}"; do
     echo "Building for Python ${py_version}"
