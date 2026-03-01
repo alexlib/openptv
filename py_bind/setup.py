@@ -76,6 +76,7 @@ def mk_ext(name, files):
         extra_link_args.extend(['-Wl,-rpath,$ORIGIN'])
     else:
         extra_compile_args.append('/W4')
+        extra_compile_args.append('/std:c11')
 
     include_dirs = [
         numpy.get_include(),

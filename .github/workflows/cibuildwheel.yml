@@ -49,7 +49,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_ARCHS_WINDOWS: AMD64
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install numpy>=2.0.0 cython>=3.0.0"
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install numpy>=2.0.0 cython>=3.0.0 setuptools wheel"
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND_LINUX: "python -m pytest {project}/py_bind/test/test_version.py"
           CIBW_TEST_COMMAND_MACOS: "python -m pytest {project}/py_bind/test/test_version.py"
