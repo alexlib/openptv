@@ -43,7 +43,7 @@ for py_version in "${PYTHON_VERSIONS[@]}"; do
         cmake">=3.15" \
         ninja \
         cython">=3.0.0" \
-        numpy"==1.26.4" \
+        numpy">=2.0.0" \
         setuptools">=61.0.0" \
         pytest \
         build

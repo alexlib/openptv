@@ -7,7 +7,7 @@ rm -rf build dist *.egg-info optv/optv
 find . -name "*.so" -o -name "*.c" | grep -v ".venv" | xargs rm -f 2>/dev/null || true
 
 # Install dependencies
-pip install numpy==1.26.4 cython>=3.0.0
+pip install numpy>=2.0.0 cython>=3.0.0
 
 # Prepare the source files
 python setup.py prepare

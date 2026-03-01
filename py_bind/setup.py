@@ -96,7 +96,6 @@ def mk_ext(name, files):
         include_dirs=include_dirs,
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
-        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
     )
 
 
