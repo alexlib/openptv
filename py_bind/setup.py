@@ -77,6 +77,7 @@ def mk_ext(name, files):
     else:
         extra_compile_args.append('/W4')
         extra_compile_args.append('/std:c11')
+        extra_compile_args.append('/D_CRT_SECURE_NO_WARNINGS')
 
     include_dirs = [
         numpy.get_include(),
