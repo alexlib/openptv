@@ -19,7 +19,7 @@ jobs:
         python: ['cp311', 'cp312', 'cp313']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.4.0
@@ -45,7 +45,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python (host)
         uses: actions/setup-python@v5
